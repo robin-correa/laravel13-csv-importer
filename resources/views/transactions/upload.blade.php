@@ -13,19 +13,28 @@
         @csrf
 
         <label for="csv_file" id="drop-zone"
-               class="relative block cursor-pointer rounded-xl border-2 border-dashed border-gray-300 bg-white p-12 text-center transition-colors hover:border-indigo-400 hover:bg-indigo-50/50">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 48 48">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"/>
-            </svg>
+               class="group relative block cursor-pointer rounded-xl border-2 border-dashed border-gray-300 bg-white p-12 text-center transition-all duration-200 hover:border-indigo-400 hover:bg-indigo-50/50 hover:shadow-md">
+            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-indigo-50 transition-colors group-hover:bg-indigo-100">
+                <svg class="h-7 w-7 text-indigo-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                </svg>
+            </div>
             <div class="mt-4">
-                <span class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+                <span class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors group-hover:bg-indigo-500">
                     Choose file
                 </span>
                 <input id="csv_file" name="csv_file" type="file" accept=".csv" class="sr-only">
                 <span class="ml-3 text-sm text-gray-500">or drag and drop</span>
             </div>
-            <p id="file-name" class="mt-3 text-sm font-medium text-indigo-600 hidden"></p>
+            <div id="file-info" class="mt-3 hidden">
+                <div class="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1">
+                    <svg class="h-4 w-4 text-indigo-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                    </svg>
+                    <span id="file-name" class="text-sm font-medium text-indigo-700"></span>
+                    <span id="file-size" class="text-xs text-indigo-400"></span>
+                </div>
+            </div>
             <p class="mt-2 text-xs text-gray-400">CSV files only, up to 2MB</p>
         </label>
 
@@ -41,31 +50,43 @@
         @enderror
 
         <button type="submit"
-                class="w-full rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                class="w-full rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-indigo-500 hover:shadow-md active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
             Upload &amp; Import
         </button>
     </form>
 
     @if ($imports->isNotEmpty())
         <div class="mt-8 rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-900/5">
-            <h3 class="text-sm font-semibold text-gray-900">Import History</h3>
+            <div class="flex items-center gap-2">
+                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <h3 class="text-sm font-semibold text-gray-900">Import History</h3>
+            </div>
             <p class="mt-1 text-xs text-gray-500">Previously imported files. Delete an import to remove its transactions and re-upload.</p>
             <ul class="mt-4 divide-y divide-gray-100">
                 @foreach ($imports as $import)
                     <li class="flex items-center justify-between gap-4 py-3">
-                        <div class="min-w-0">
-                            <p class="truncate text-sm font-medium text-gray-900">{{ $import->original_filename }}</p>
-                            <p class="text-xs text-gray-500">
-                                {{ $import->row_count }} {{ Str::plural('row', $import->row_count) }}
-                                &middot; {{ $import->created_at->diffForHumans() }}
-                            </p>
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                                <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                                </svg>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="truncate text-sm font-medium text-gray-900">{{ $import->original_filename }}</p>
+                                <p class="text-xs text-gray-500">
+                                    {{ $import->row_count }} {{ Str::plural('row', $import->row_count) }}
+                                    &middot; {{ $import->created_at->diffForHumans() }}
+                                </p>
+                            </div>
                         </div>
                         <form action="{{ route('imports.destroy', $import) }}" method="POST"
                               onsubmit="return confirm('Delete this import and all its transactions?')">
                             @csrf
                             @method('DELETE')
                             <button type="submit"
-                                    class="rounded-md px-3 py-1.5 text-xs font-medium text-red-600 ring-1 ring-red-200 transition-colors hover:bg-red-50">
+                                    class="rounded-md px-3 py-1.5 text-xs font-medium text-red-600 ring-1 ring-red-200 transition-colors hover:bg-red-50 hover:ring-red-300">
                                 Delete
                             </button>
                         </form>
@@ -76,11 +97,16 @@
     @endif
 
     <div class="mt-8 rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-900/5">
-        <h3 class="text-sm font-semibold text-gray-900">Expected CSV format</h3>
-        <p class="mt-1 text-xs text-gray-500">Your file should contain these column headers:</p>
+        <div class="flex items-center gap-2">
+            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+            </svg>
+            <h3 class="text-sm font-semibold text-gray-900">Expected CSV format</h3>
+        </div>
+        <p class="mt-1 text-xs text-gray-500">Your file should contain these column headers (case-insensitive):</p>
         <div class="mt-3 flex flex-wrap gap-2">
             @foreach (['Date', 'Description', 'Amount', 'Business', 'Category', 'Transaction_Type', 'Source', 'Status'] as $col)
-                <span class="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
+                <span class="inline-flex items-center rounded-md bg-indigo-50 px-2.5 py-1 text-xs font-mono font-medium text-indigo-700 ring-1 ring-inset ring-indigo-200">
                     {{ $col }}
                 </span>
             @endforeach
@@ -92,34 +118,43 @@
 document.addEventListener('DOMContentLoaded', function () {
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('csv_file');
+    const fileInfo = document.getElementById('file-info');
     const fileNameEl = document.getElementById('file-name');
+    const fileSizeEl = document.getElementById('file-size');
+
+    function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        return (bytes / 1024).toFixed(1) + ' KB';
+    }
+
+    function showFile(file) {
+        fileNameEl.textContent = file.name;
+        fileSizeEl.textContent = '(' + formatSize(file.size) + ')';
+        fileInfo.classList.remove('hidden');
+    }
 
     fileInput.addEventListener('change', function () {
-        if (this.files.length > 0) {
-            fileNameEl.textContent = this.files[0].name;
-            fileNameEl.classList.remove('hidden');
-        }
+        if (this.files.length > 0) showFile(this.files[0]);
     });
 
     ['dragenter', 'dragover'].forEach(event => {
         dropZone.addEventListener(event, function (e) {
             e.preventDefault();
-            dropZone.classList.add('border-indigo-500', 'bg-indigo-50');
+            dropZone.classList.add('border-indigo-500', 'bg-indigo-50', 'shadow-md');
         });
     });
 
     ['dragleave', 'drop'].forEach(event => {
         dropZone.addEventListener(event, function (e) {
             e.preventDefault();
-            dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
+            dropZone.classList.remove('border-indigo-500', 'bg-indigo-50', 'shadow-md');
         });
     });
 
     dropZone.addEventListener('drop', function (e) {
         if (e.dataTransfer.files.length > 0) {
             fileInput.files = e.dataTransfer.files;
-            fileNameEl.textContent = e.dataTransfer.files[0].name;
-            fileNameEl.classList.remove('hidden');
+            showFile(e.dataTransfer.files[0]);
         }
     });
 });

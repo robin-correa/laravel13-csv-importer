@@ -12,7 +12,7 @@
             </p>
         </div>
         <a href="{{ route('upload.create') }}"
-           class="mt-4 inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:mt-0">
+           class="mt-4 inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-indigo-500 hover:shadow-md sm:mt-0">
             <svg class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
             </svg>
@@ -25,10 +25,17 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {{-- Search --}}
             <div class="sm:col-span-2 lg:col-span-3 xl:col-span-2">
-                <label for="search" class="block text-xs font-medium text-gray-700">Search description</label>
-                <input type="text" name="search" id="search" value="{{ request('search') }}"
-                       placeholder="e.g. STRIPE TRANSFER"
-                       class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none">
+                <label for="search" class="block text-xs font-medium text-gray-700">Search</label>
+                <div class="relative mt-1">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+                        </svg>
+                    </div>
+                    <input type="text" name="search" id="search" value="{{ request('search') }}"
+                           placeholder="Search description or business..."
+                           class="block w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none">
+                </div>
             </div>
 
             {{-- Business --}}
@@ -95,7 +102,7 @@
         <div class="mt-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <button type="submit"
-                        class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+                        class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-500">
                     Apply Filters
                 </button>
                 @if (request()->hasAny(['search', 'business', 'category', 'transaction_type', 'source', 'status']))
@@ -117,6 +124,24 @@
             </div>
         </div>
     </form>
+
+    {{-- Active Filters --}}
+    @if (request()->hasAny(['search', 'business', 'category', 'transaction_type', 'source', 'status']))
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+            <span class="text-xs font-medium text-gray-500">Active:</span>
+            @foreach (['search', 'business', 'category', 'transaction_type', 'source', 'status'] as $key)
+                @if (request()->filled($key))
+                    <a href="{{ route('transactions.index', array_merge(request()->except($key), request()->has('per_page') ? ['per_page' => request('per_page')] : [])) }}"
+                       class="group inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-200 transition-colors hover:bg-indigo-100">
+                        {{ str_replace('_', ' ', ucfirst($key)) }}: {{ request($key) }}
+                        <svg class="h-3 w-3 text-indigo-400 group-hover:text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </a>
+                @endif
+            @endforeach
+        </div>
+    @endif
 
     {{-- Table --}}
     @if ($transactions->isEmpty())
@@ -145,19 +170,19 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Date</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Description</th>
-                            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Amount</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Business</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Category</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Type</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Source</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
+                            <th class="sticky top-0 bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Date</th>
+                            <th class="sticky top-0 bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Description</th>
+                            <th class="sticky top-0 bg-gray-50 px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Amount</th>
+                            <th class="sticky top-0 bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Business</th>
+                            <th class="sticky top-0 bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Category</th>
+                            <th class="sticky top-0 bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Type</th>
+                            <th class="sticky top-0 bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Source</th>
+                            <th class="sticky top-0 bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @foreach ($transactions as $txn)
-                            <tr class="hover:bg-gray-50">
+                            <tr class="transition-colors hover:bg-indigo-50/40 even:bg-gray-50/50">
                                 <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-700">
                                     {{ $txn->date->format('M d, Y') }}
                                 </td>
@@ -165,20 +190,20 @@
                                     {{ $txn->description }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-right text-sm font-mono {{ $txn->amount >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                                    {{ $txn->amount >= 0 ? '+' : '' }}{{ number_format($txn->amount, 2) }}
+                                    {{ $txn->amount >= 0 ? '+' : '-' }}${{ number_format(abs($txn->amount), 2) }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-700">{{ $txn->business }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-500">{{ $txn->category }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-sm">
                                     @php
                                         $typeColor = match($txn->transaction_type) {
-                                            'Income' => 'bg-green-100 text-green-700',
-                                            'Expense' => 'bg-red-100 text-red-700',
-                                            'Transfer' => 'bg-blue-100 text-blue-700',
-                                            default => 'bg-gray-100 text-gray-700',
+                                            'Income' => 'bg-green-100 text-green-700 ring-green-600/20',
+                                            'Expense' => 'bg-red-100 text-red-700 ring-red-600/20',
+                                            'Transfer' => 'bg-blue-100 text-blue-700 ring-blue-600/20',
+                                            default => 'bg-gray-100 text-gray-700 ring-gray-600/20',
                                         };
                                     @endphp
-                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ $typeColor }}">
+                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset {{ $typeColor }}">
                                         {{ $txn->transaction_type }}
                                     </span>
                                 </td>
@@ -186,12 +211,12 @@
                                 <td class="whitespace-nowrap px-4 py-3 text-sm">
                                     @php
                                         $statusColor = match($txn->status) {
-                                            'Reviewed' => 'bg-emerald-100 text-emerald-700',
-                                            'Pending' => 'bg-amber-100 text-amber-700',
-                                            default => 'bg-gray-100 text-gray-700',
+                                            'Reviewed' => 'bg-emerald-100 text-emerald-700 ring-emerald-600/20',
+                                            'Pending' => 'bg-amber-100 text-amber-700 ring-amber-600/20',
+                                            default => 'bg-gray-100 text-gray-700 ring-gray-600/20',
                                         };
                                     @endphp
-                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ $statusColor }}">
+                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset {{ $statusColor }}">
                                         {{ $txn->status }}
                                     </span>
                                 </td>
