@@ -1,0 +1,6 @@
+Date,Description,Amount,Business,Category,Transaction_Type,Source,Status
+2026-01-02,MONTHLY SERVICE FEE,-15.00,Bright Fitness,Bank Fees,Expense,Chase,Reviewed
+2026-01-03,ADOBE CREATIVE CLOUD,-54.99,Bright Fitness,Software & Subscriptions,Expense,Chase,Reviewed
+2026-01-05,DEPOSIT - ACH PAYMENT,3200.00,Rentals,Rental Income,Income,Fidelity,Reviewed
+2026-01-06,STRIPE TRANSFER,487.50,TechCo,Revenue - Product Sales,Income,Stripe,Pending
+2026-01-10,ATM WITHDRAWAL,-200.00,Personal,Uncategorized,Transfer,Wells Fargo,Pending
