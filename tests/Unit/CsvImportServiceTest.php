@@ -126,6 +126,72 @@ class CsvImportServiceTest extends TestCase
         unlink($path);
     }
 
+    public function test_parses_iso_date_format(): void
+    {
+        $this->service->import($this->fixtureFile('valid.csv'));
+
+        $txn = Transaction::where('description', 'MONTHLY SERVICE FEE')->first();
+
+        $this->assertSame('2026-01-02', $txn->date->format('Y-m-d'));
+    }
+
+    public function test_parses_slash_date_format(): void
+    {
+        $path = base_path('tests/fixtures/slash_dates.csv');
+        file_put_contents($path, implode("\n", [
+            'Date,Description,Amount,Business,Category,Transaction_Type,Source,Status',
+            '24/3/2026,SLASH DATE TEST,-50.00,Acme,Bank Fees,Expense,Chase,Reviewed',
+        ]));
+
+        $file = new UploadedFile($path, 'slash_dates.csv', 'text/csv', null, true);
+        $import = $this->service->import($file);
+
+        $txn = Transaction::where('description', 'SLASH DATE TEST')->first();
+
+        $this->assertSame(1, $import->row_count);
+        $this->assertSame('2026-03-24', $txn->date->format('Y-m-d'));
+        unlink($path);
+    }
+
+    public function test_parses_zero_padded_slash_date(): void
+    {
+        $path = base_path('tests/fixtures/padded_dates.csv');
+        file_put_contents($path, implode("\n", [
+            'Date,Description,Amount,Business,Category,Transaction_Type,Source,Status',
+            '05/03/2026,PADDED DATE TEST,-25.00,Acme,Bank Fees,Expense,Chase,Reviewed',
+        ]));
+
+        $file = new UploadedFile($path, 'padded_dates.csv', 'text/csv', null, true);
+        $this->service->import($file);
+
+        $txn = Transaction::where('description', 'PADDED DATE TEST')->first();
+
+        $this->assertSame('2026-03-05', $txn->date->format('Y-m-d'));
+        unlink($path);
+    }
+
+    public function test_skips_excel_trailing_blank_rows(): void
+    {
+        $lines = [
+            'Date,Description,Amount,Business,Category,Transaction_Type,Source,Status',
+            '24/3/2026,EXCEL ROW 1,100,Acme,Fees,Expense,Chase,Reviewed',
+            '25/3/2026,EXCEL ROW 2,200,Acme,Fees,Income,Chase,Pending',
+        ];
+        for ($i = 0; $i < 20; $i++) {
+            $lines[] = ',,,,,,,';
+        }
+
+        $path = base_path('tests/fixtures/excel_blanks.csv');
+        file_put_contents($path, implode("\n", $lines));
+
+        $file = new UploadedFile($path, 'excel_blanks.csv', 'text/csv', null, true);
+        $import = $this->service->import($file);
+
+        $this->assertSame(2, $import->row_count);
+        $this->assertSame(2, Transaction::count());
+        unlink($path);
+    }
+
     public function test_row_count_matches_actual_transactions(): void
     {
         $import = $this->service->import($this->fixtureFile('valid.csv'));

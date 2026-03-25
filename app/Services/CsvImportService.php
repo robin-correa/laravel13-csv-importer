@@ -6,6 +6,7 @@ use App\Exceptions\DuplicateImportException;
 use App\Exceptions\InvalidCsvFormatException;
 use App\Models\CsvImport;
 use App\Models\Transaction;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use League\Csv\Reader;
@@ -132,7 +133,7 @@ class CsvImportService
         $get = fn (string $key) => isset($headerMap[$key]) ? ($record[$headerMap[$key]] ?? null) : null;
 
         return [
-            'date' => $get('date'),
+            'date' => $this->parseDate($get('date')),
             'description' => $get('description'),
             'amount' => $get('amount'),
             'business' => $get('business'),
@@ -141,5 +142,43 @@ class CsvImportService
             'source' => $get('source'),
             'status' => $get('status'),
         ];
+    }
+
+    private const array DATE_FORMATS = [
+        'j/n/Y',   // 24/3/2026   (Excel locale, no zero-padding)
+        'd/m/Y',   // 24/03/2026
+        'n/j/Y',   // 3/24/2026   (US locale, no zero-padding)
+        'm/d/Y',   // 03/24/2026
+        'Y-m-d',   // 2026-03-24  (ISO)
+        'd-m-Y',   // 24-03-2026
+        'm-d-Y',   // 03-24-2026
+        'Y/m/d',   // 2026/03/24
+        'd.m.Y',   // 24.03.2026
+        'M d, Y',  // Mar 24, 2026
+        'F d, Y',  // March 24, 2026
+    ];
+
+    private function parseDate(?string $value): ?string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        foreach (self::DATE_FORMATS as $format) {
+            $date = \DateTime::createFromFormat("!{$format}", $value);
+            $errors = $date ? $date::getLastErrors() : false;
+
+            if ($date !== false && (! $errors || ($errors['warning_count'] === 0 && $errors['error_count'] === 0))) {
+                return $date->format('Y-m-d');
+            }
+        }
+
+        try {
+            return Carbon::parse($value)->format('Y-m-d');
+        } catch (\Exception) {
+            return null;
+        }
     }
 }
