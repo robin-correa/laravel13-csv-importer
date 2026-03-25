@@ -76,12 +76,29 @@ class CsvImportServiceTest extends TestCase
         $this->service->import($this->fixtureFile('valid.csv'));
     }
 
-    public function test_throws_on_empty_csv(): void
+    public function test_throws_on_headers_only_csv(): void
     {
         $this->expectException(InvalidCsvFormatException::class);
         $this->expectExceptionMessage('The CSV file contains no data rows.');
 
         $this->service->import($this->fixtureFile('empty.csv'));
+    }
+
+    public function test_throws_on_completely_empty_csv(): void
+    {
+        $path = base_path('tests/fixtures/zero_bytes.csv');
+        file_put_contents($path, '');
+
+        $file = new UploadedFile($path, 'zero_bytes.csv', 'text/csv', null, true);
+
+        $this->expectException(InvalidCsvFormatException::class);
+        $this->expectExceptionMessage('The CSV file is empty.');
+
+        try {
+            $this->service->import($file);
+        } finally {
+            unlink($path);
+        }
     }
 
     public function test_throws_on_bad_headers(): void

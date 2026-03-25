@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use League\Csv\Reader;
+use League\Csv\SyntaxError;
 
 class CsvImportService
 {
@@ -34,10 +35,18 @@ class CsvImportService
             );
         }
 
-        $csv = Reader::createFromPath($file->getRealPath());
+        $csv = Reader::from($file->getRealPath());
         $csv->setHeaderOffset(0);
 
-        $headerMap = $this->normalizeHeaders($csv->getHeader());
+        try {
+            $headers = $csv->getHeader();
+        } catch (SyntaxError) {
+            throw new InvalidCsvFormatException(
+                'The CSV file is empty.'
+            );
+        }
+
+        $headerMap = $this->normalizeHeaders($headers);
         $this->validateHeaders(array_keys($headerMap));
 
         $rows = $this->parseRecords(iterator_to_array($csv->getRecords()), $headerMap);

@@ -17,11 +17,10 @@ class CsvUploadRequest extends FormRequest
             'csv_file' => [
                 'required',
                 'file',
-                'mimes:csv',
                 'max:2048',
                 function ($attribute, $value, $fail) {
                     if (strtolower($value->getClientOriginalExtension()) !== 'csv') {
-                        $fail('The file must have a .csv extension.');
+                        $fail('The file must be a CSV file (.csv).');
                     }
                 },
             ],
@@ -32,7 +31,6 @@ class CsvUploadRequest extends FormRequest
     {
         return [
             'csv_file.required' => 'Please select a CSV file to upload.',
-            'csv_file.mimes' => 'The file must be a CSV file (.csv).',
             'csv_file.max' => 'The file must not exceed 2MB.',
         ];
     }
