@@ -52,6 +52,21 @@ class TransactionControllerTest extends TestCase
         $this->assertSame(0, CsvImport::count());
     }
 
+    public function test_rejects_txt_file_with_csv_content(): void
+    {
+        $file = UploadedFile::fake()->createWithContent(
+            'data.txt',
+            "Date,Description,Amount,Business,Category,Transaction_Type,Source,Status\n2026-01-02,TEST,-10,Acme,Fees,Expense,Chase,Reviewed"
+        );
+
+        $response = $this->post(route('upload.store'), [
+            'csv_file' => $file,
+        ]);
+
+        $response->assertSessionHasErrors('csv_file');
+        $this->assertSame(0, CsvImport::count());
+    }
+
     public function test_rejects_missing_file(): void
     {
         $response = $this->post(route('upload.store'), []);
